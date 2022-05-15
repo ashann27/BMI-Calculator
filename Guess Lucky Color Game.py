@@ -20,4 +20,3 @@ for i in range(len(colors)):
         else:
             print('正解！')
             break
-
