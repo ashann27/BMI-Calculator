@@ -29,9 +29,38 @@ def list_all_words():
         print('{} - {} \nHint: {}'.format(key, value[0], value[1]))
 
 def test_yourself():
+
+    points = 0
+    incorrect_words = {}
+    playing = true
+
+    for key, value in dictionary.items():
+        answer = input('{}はなんでしょうか？\n'
+          '単語を入力してください。また、「h」ヒント　「p」パス  「q」やめる'.format(value[0]))
+
+        if answer == 'h':
+            print('\n Hint:{}'.format(value[1]))
+
+        elif answer == 'p':
+            print('答えは{}でした'.format(key))
+            incorrect_words[key] = None
+        elif answer == 'q':
+            playing=false
+        else:
+            print(answer + 'ではないです')
+    print('\nScore: {}/{}'.format(points, len(dictionary)))
+    print('Incorrect Words:')
+    for key in incorrect_words:
+        print(key)
+
+
+
+
+
     
 
 add_word()
 list_all_words()
 remove_word()
 list_all_words()
+test_yourself()
