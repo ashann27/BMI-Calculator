@@ -4,71 +4,61 @@ from abc import ABC, abstractmethod
 class Character(ABC):
     def __init__(self, level):
         self.hp = 0
-    #add defense later
+        self.level = 1
+        self.max_hp = level*10
     #add item slot later
     pass
 
 class Player (Character):
-    def __init__(self):
-        super().__init__(name, level)
-        self.level = 1
-        self.hp = level * 10
-        self.attack = level * 3
-        self.exp = 0
+    def __init__(self, level):
+        super().__init__(level)
 
-    #level up method
-        # player levels up every time they increase exp by 2, scales so you never have to beat more than 5 enemies to level up
-        # exp gained is based on current level x enemy level bonus
+        max_hp = level * 10
+        self.max_hp = max_hp
+
+        current_hp = max_hp
+        self.current_hp = current_hp
+
+        attack = level * 3
+        self.attack = attack
+
+        exp = 0
+        self.exp = exp
 
 class Enemy (Character):
 
-    def __init__(self):
+    def __init__(self, level):
         super().__init__(level)
-        self.level = level
-        self.hp = level * random.randint(7,12)
-        self.attack = level * random.randit(3)
+
+        max_hp = level * random.randint(7,12)
+        self.max_hp = max_hp
+        self.hp = max_hp
+        self.attack = level * 3
 
         enemy_types = ['ゴキブリ','へび','ウルフ','ヒューマン','さる','ゴリラ','サメ','白クマ','カバ']
         self.name=enemy_types[level]
 
-        if hp < level * 9:
+        if self.hp < level * 9:
             self.title = '弱い'
-            self.exp = attack + (attack * .7)
-        elif hp >= level * 11:
+            self.exp = self.attack + (self.attack * .7)
+        elif self.hp >= level * 11:
             self.title = '強い'
-            self.exp = attack + (attack * 1.3)
+            self.exp = self.attack + (self.attack * 1.3)
         else:
             self.title = '普通'
-        #items?
 
 
-
-
-    def attack():
-        pass
-
-# item info generator method
-
-#level_up method
-# level up multiplies all stats by 1.5 and
-# level up lowers enemy stat ratiomkk
-
-
-# victory bonus exp
-
-# loss penalty exp
+# item info generator method?
 
 # the more fights the player says yes to, the more difficult the enemy's level ratio becomes
 # and vice versa
 
-# character data can be saved to text file
-
 def start_game():
-    player = Player()
+    player = Player(1)
     while True:
         enemy = Enemy(player.level)
         cmd = input('{} {}が来ました！戦おうとしてるらしい、どうしますか？\n'
-                '攻撃「A」　　　　逃げる「R」      やめる 「Q」\n'.format(enemy.title, enemy.name))
+                    '攻撃「A」　　　　逃げる「R」      やめる 「Q」\n'.format(enemy.title, enemy.name))
         if cmd.lower() == 'a':
             fight(player, enemy)
 
@@ -91,10 +81,27 @@ def fight(player, enemy):
             print('あなたが攻撃しました！')
             enemy.hp -= player.attack
             turn += 1
-        if turn % 2 == 1:
+        elif turn % 2 != 1:
             print('{}が{}攻撃をしました！'.format(enemy.name, enemy.title))
             player.hp -= enemy.attack
             turn += 1
 
     if enemy.hp == 0:
-        print('{}{}を倒しました！{}expをもらいました。次のレベルは後{}expだけです！'.format(enemy.title, enemy.name, enemy.exp))
+        player.hp = player.max_hp
+        player.exp += enemy.max_hp
+        print('{}{}を倒しました！{}expをもらいました.'.format(enemy.title, enemy.name, enemy.exp))
+    elif player.hp == 0:
+        player.hp = player.max_hp
+        player.exp += (enemy.max_hp/2)
+        print('負けました！半分ぐらいの{}expをもらいました')
+
+
+    if player.exp > player.max_hp:
+        print('レベルアップできました！')
+        new_level = player.level+1
+
+        return player
+    else:
+        return player
+
+start_game()
