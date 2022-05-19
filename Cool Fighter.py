@@ -5,7 +5,6 @@ class Character(ABC):
     def __init__(self, level):
         self.hp = 0
         self.level = 1
-        self.max_hp = level*10
     #add item slot later
     pass
 
@@ -16,8 +15,8 @@ class Player (Character):
         max_hp = level * 10
         self.max_hp = max_hp
 
-        current_hp = max_hp
-        self.current_hp = current_hp
+        hp = max_hp
+        self.hp = hp
 
         attack = level * 3
         self.attack = attack
@@ -30,18 +29,20 @@ class Enemy (Character):
     def __init__(self, level):
         super().__init__(level)
 
-        max_hp = level * random.randint(7,12)
+        low = 7+level
+        high = 12+level
+        max_hp = level * random.randint(low,high)
         self.max_hp = max_hp
         self.hp = max_hp
-        self.attack = level * 3
+        self.attack = (level * random.randint(3, 6))
 
         enemy_types = ['ゴキブリ','へび','ウルフ','ヒューマン','さる','ゴリラ','サメ','白クマ','カバ']
-        self.name=enemy_types[level]
+        self.name=enemy_types[level-1]
 
         if self.hp < level * 9:
             self.title = '弱い'
             self.exp = self.attack + (self.attack * .7)
-        elif self.hp >= level * 11:
+        elif self.hp >= level * 11 or self.attack==4:
             self.title = '強い'
             self.exp = self.attack + (self.attack * 1.3)
         else:
@@ -56,9 +57,11 @@ class Enemy (Character):
 def start_game():
     player = Player(1)
     while True:
+
         enemy = Enemy(player.level)
-        cmd = input('{} {}が来ました！戦おうとしてるらしい、どうしますか？\n'
-                    '攻撃「A」　　　　逃げる「R」      やめる 「Q」\n'.format(enemy.title, enemy.name))
+        cmd = input('{}{}(HP:{} ATK:{})が来ました！戦おうとしてるらしい、どうしますか？ (自分がさきあに攻撃します）\n'
+                    '自分:{} HP  {} ATK\n\n'
+                    '攻撃「A」　　　　逃げる「R」      やめる 「Q」\n'.format(enemy.title, enemy.name,enemy.hp,enemy.attack, player.hp, player.attack))
         if cmd.lower() == 'a':
             fight(player, enemy)
 
@@ -69,39 +72,67 @@ def start_game():
         elif cmd.lower() == 'q':
             break
 
-        else: print('{} は選択に入ってません。また入力してください'.format(cmd))
+        else: print('{} は選択に入ってません。また入力してください\n'.format(cmd))
 
 #def attack(Player, Enemy):
 
 def fight(player, enemy):
     print('戦いが始まりました！')
     turn = 1
-    while player.hp > 0 and enemy.hp > 0:
+    battling = 1
+    while player.hp > 0 and enemy.hp > 0 and battling ==1:
         if turn % 2 == 1:
-            print('あなたが攻撃しました！')
             enemy.hp -= player.attack
+            enemy.hp = round(enemy.hp)
             turn += 1
-        elif turn % 2 != 1:
-            print('{}が{}攻撃をしました！'.format(enemy.name, enemy.title))
+        elif player.hp - enemy.attack <= 0:
+            battling ==0
+            break
+        elif turn % 2 != 1 and enemy.hp > 0:
             player.hp -= enemy.attack
             turn += 1
+            answer = input('ラウンド終了！\n'
+                           '     HP　　　　　　　　ATK\n'
+                           '自分　{}              {}\n'
+                           '敵　　{}              {}\n'
+                           '\n [F] = 続く　[R] = ギブアップ(8分の１expゲット)\n'.format(player.hp, player.attack, enemy.hp, enemy.attack))
+            thinking = 1
+            while thinking == 1:
+                if answer.lower() == 'f':
+                    thinking = 0
+                    continue
+                elif answer.lower() == 'r':
+                    player.hp = player.max_hp
+                    player.exp += round((enemy.max_hp/8), 2)
+                    print('逃げました！少しだけの{}expをもらいました\n'.format(enemy.max_hp/8))
+                    battling = 0
+                    break
+                else: answer = input('{} は選択に入ってません。また入力してください\n'.format(answer))
+        else: continue
 
-    if enemy.hp == 0:
+    if  enemy.hp <= 0:
         player.hp = player.max_hp
-        player.exp += enemy.max_hp
-        print('{}{}を倒しました！{}expをもらいました.'.format(enemy.title, enemy.name, enemy.exp))
-    elif player.hp == 0:
+        player.exp += round((enemy.max_hp/(2*enemy.level)),2)
+        player.attack += round(player.exp/10, 2)
+        print('{}{}を倒しました！{}expをもらいました.\n'
+              '攻撃力が少し増えました！\n'.format(enemy.title, enemy.name, (enemy.max_hp/(2*enemy.level)),2))
+    elif player.hp <= 0 or player.hp - enemy.attack <= 0:
         player.hp = player.max_hp
-        player.exp += (enemy.max_hp/2)
-        print('負けました！半分ぐらいの{}expをもらいました')
+        player.exp += round((enemy.max_hp/4),2)
+        print('負けました！でも最後まで頑張ったので{}expをもらいました\n'.format(enemy.max_hp/4))
 
 
-    if player.exp > player.max_hp:
-        print('レベルアップできました！')
-        new_level = player.level+1
+    if player.exp > player.level*player.max_hp:
+        print('レベルアップできました！\n')
+        player.level+=1
+        player.max_hp = player.level*10
+        player.attack = round((player.level * 3)+(player.exp/10),2)
+        player.hp = player.max_hp
+
 
         return player
     else:
+        print('レベルアップは後{}expだけ！\n'.format((player.level*player.max_hp)-player.exp))
         return player
 
 start_game()
