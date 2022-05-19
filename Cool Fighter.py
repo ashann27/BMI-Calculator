@@ -48,16 +48,9 @@ class Enemy (Character):
         else:
             self.title = '普通'
 
-
-# item info generator method?
-
-# the more fights the player says yes to, the more difficult the enemy's level ratio becomes
-# and vice versa
-
 def start_game():
     player = Player(1)
     while True:
-
         enemy = Enemy(player.level)
         cmd = input('{}{}(HP:{} ATK:{})が来ました！戦おうとしてるらしい、どうしますか？ (自分がさきあに攻撃します）\n'
                     '自分:{} HP  {} ATK\n\n'
@@ -73,8 +66,6 @@ def start_game():
             break
 
         else: print('{} は選択に入ってません。また入力してください\n'.format(cmd))
-
-#def attack(Player, Enemy):
 
 def fight(player, enemy):
     print('戦いが始まりました！')
@@ -128,8 +119,6 @@ def fight(player, enemy):
         player.max_hp = player.level*10
         player.attack = round((player.level * 3)+(player.exp/10),2)
         player.hp = player.max_hp
-
-
         return player
     else:
         print('レベルアップは後{}expだけ！\n'.format((player.level*player.max_hp)-player.exp))
